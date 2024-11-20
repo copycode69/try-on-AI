@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Try-On Diffusion | Jay Tiwari</title>
+  <style>
+    /* Add styles for layout and user experience */
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    
+
+    body {
+      font-family: 'Plus Jakarta Sans ', Plus Jakarta Sans ;
+      background: linear-gradient(to right, #00c6ff, #0072ff);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+      color: #333;
+    }
+
+    .container {
+      background: #fff;
+      padding: 40px;
+      border-radius: 20px;
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+      width: 100%;
+      max-width: 500px;
+      text-align: center;
+      animation: fadeIn 1s ease-out;
+    }
+
+    h3 {
+      font-size: 30px;
+      color: #333;
+      margin-bottom: 20px;
+      font-weight: 600;
+      letter-spacing: 0.5px;
+    }
+
+    p {
+      font-size: 16px;
+      color: #555;
+      margin-bottom: 20px;
+      font-weight: 500;
+    }
+
+    .upload-area {
+      width: 100%;
+      padding: 20px;
+      margin: 15px 0;
+      border: 2px dashed #ddd;
+      border-radius: 10px;
+      background-color: #f7f7f7;
+      font-size: 16px;
+      text-align: center;
+      transition: 0.3s;
+      outline: none;
+    }
+
+    .upload-area:hover {
+      border-color: #0072ff;
+    }
+
+    .upload-area p {
+      margin-top: 10px;
+    }
+
+    input[type="file"] {
+      display: none;
+    }
+
+    button {
+      padding: 15px 25px;
+      background-color: #0072ff;
+      color: white;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      font-size: 18px;
+      width: 100%;
+      transition: background-color 0.3s, transform 0.2s;
+      margin-top: 10px;
+    }
+
+    button:hover {
+      background-color: #005bb5;
+      transform: scale(1.05);
+    }
+
+    button:active {
+      background-color: #00448b;
+    }
+
+    .image-container {
+      margin-top: 30px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    #output-image {
+      max-width: 100%;
+      max-height: 350px;
+      border-radius: 15px;
+      object-fit: contain;
+      display: none; /* Initially hidden until generated */
+      box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+    }
+
+    .footer {
+      margin-top: 20px;
+      font-size: 14px;
+      color: #777;
+    }
+
+    .footer a {
+      color: #0072ff;
+      text-decoration: none;
+      font-weight: 500;
+    }
+
+    .footer a:hover {
+      text-decoration: underline;
+    }
+
+    #loading-text {
+      font-size: 18px;
+      color: #0072ff;
+      margin-top: 20px;
+    }
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(30px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    @media screen and (max-width: 480px) {
+      .container {
+        padding: 25px;
+      }
+
+      h3 {
+        font-size: 26px;
+      }
+
+      p {
+        font-size: 14px;
+      }
+
+      button {
+        font-size: 16px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h3>Virtual Try-On Diffusion</h3>
+    <p>Upload a model and a cloth image to generate a virtual try-on.</p>
+    
+    <!-- Model Image Upload Area -->
+    <div class="upload-area" id="model-upload" ondrop="handleDrop(event, 'model')" ondragover="allowDrop(event)" onclick="document.getElementById('model-image').click()">
+      <input type="file" id="model-image" accept="image/*" onchange="previewImage(event, 'model')" />
+      <p>Drag & Drop Model Image or Click to Upload</p>
+    </div>
+    
+    <!-- Cloth Image Upload Area -->
+    <div class="upload-area" id="cloth-upload" ondrop="handleDrop(event, 'cloth')" ondragover="allowDrop(event)" onclick="document.getElementById('cloth-image').click()">
+      <input type="file" id="cloth-image" accept="image/*" onchange="previewImage(event, 'cloth')" />
+      <p>Drag & Drop Cloth Image or Click to Upload</p>
+    </div>
+    
+    <!-- Generate Button -->
+    <button id="generate-button">Generate Try-On Image</button>
+    
+    <!-- Reset Button -->
+    <button id="reset-button" style="background-color: #f44336; margin-top: 10px;">Reset</button>
+
+    <!-- Output Image -->
+    <div class="image-container">
+      <img id="output-image" src="" alt="Generated Try-On Image" />
+      <!-- Download Button -->
+      <a id="download-link" href="#" download="generated_image.png" style="display: none;">
+        <button id="download-button">Download Image</button>
+      </a>
+    </div>
+
+    <!-- Footer -->
+    <div class="footer">
+      <p>Powered by <a href="https://www.jaytiwari.in/" target="_blank">jaytiwari.in</a></p>
+    </div>
+  </div>
+
+  <script>
+    // Handle drag and drop
+    function allowDrop(event) {
+      event.preventDefault();
+    }
+
+    function handleDrop(event, type) {
+      event.preventDefault();
+      const file = event.dataTransfer.files[0];
+      if (file) {
+        if (type === 'model') {
+          document.getElementById('model-image').files = event.dataTransfer.files;
+        } else {
+          document.getElementById('cloth-image').files = event.dataTransfer.files;
+        }
+        previewImage({ target: { files: event.dataTransfer.files } }, type);
+      }
+    }
+
+    function previewImage(event, type) {
+      const file = event.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        const img = new Image();
+        img.src = e.target.result;
+        if (type === 'model') {
+          img.onload = function() {
+            document.getElementById('model-upload').querySelector('p').textContent = "Model Image Uploaded";
+          };
+        } else {
+          img.onload = function() {
+            document.getElementById('cloth-upload').querySelector('p').textContent = "Cloth Image Uploaded";
+          };
+        }
+      };
+      reader.readAsDataURL(file);
+    }
+
+    // Listen for Generate Try-On Image button click
+    document.getElementById('generate-button').addEventListener('click', function(event) {
+        event.preventDefault(); // Prevent page reload explicitly
+
+        const modelImageInput = document.getElementById('model-image');
+        const clothImageInput = document.getElementById('cloth-image');
+        const outputImage = document.getElementById('output-image');
+        const downloadLink = document.getElementById('download-link');
+
+        // Check if both files are uploaded
+        if (modelImageInput.files.length === 0 || clothImageInput.files.length === 0) {
+            alert('Please upload both model and cloth images.');
+            return;
+        }
+
+        // Hide the output image during loading
+        outputImage.style.display = 'none';
+
+        // Add loading indicator
+        let loadingText = document.createElement('p');
+        loadingText.textContent = 'Generating image...';
+        loadingText.id = 'loading-text';
+        document.querySelector('.container').appendChild(loadingText);
+
+        // Prepare form data to send to Flask API
+        const formData = new FormData();
+        formData.append('model_image', modelImageInput.files[0]);
+        formData.append('cloth_image', clothImageInput.files[0]);
+
+        // Use fetch to send the request asynchronously
+        fetch('http://localhost:5000/generate-tryon', {
+            method: 'POST',
+            body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+            // Check the API response status
+            if (data.status === 'success') {
+                outputImage.src = `data:image/png;base64,${data.output_image}`;
+                outputImage.style.display = 'block'; // Show the image
+                downloadLink.href = `data:image/png;base64,${data.output_image}`; // Set download link
+                downloadLink.style.display = 'inline-block'; // Show the download button
+            } else {
+                alert('Error: ' + data.message);
+            }
+            // Remove loading text after the response is processed
+            document.getElementById('loading-text').remove();
+        })
+        .catch(error => {
+            // Handle any errors during the fetch request
+            alert('An error occurred: ' + error);
+            document.getElementById('loading-text').remove();
+        });
+    });
+
+    // Reset the page
+    document.getElementById('reset-button').addEventListener('click', function() {
+        // Reset the input fields for model and cloth image
+        document.getElementById('model-image').value = '';
+        document.getElementById('cloth-image').value = '';
+        
+        // Reset the upload areas text
+        document.getElementById('model-upload').querySelector('p').textContent = 'Drag & Drop Model Image or Click to Upload';
+        document.getElementById('cloth-upload').querySelector('p').textContent = 'Drag & Drop Cloth Image or Click to Upload';
+        
+        // Hide the output image and clear its source
+        const outputImage = document.getElementById('output-image');
+        outputImage.style.display = 'none';
+        outputImage.src = '';
+        
+        // Hide the download button
+        document.getElementById('download-link').style.display = 'none';
+        
+        // Remove any loading text that might still be visible
+        const loadingText = document.getElementById('loading-text');
+        if (loadingText) {
+            loadingText.remove();
+        }
+    });
+  </script>
+</body>
+</html>
