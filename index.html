@@ -14,25 +14,33 @@
     
 
     body {
-      font-family: 'Plus Jakarta Sans ', Plus Jakarta Sans ;
-      background: linear-gradient(to right, #00c6ff, #0072ff);
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      height: 100vh;
+      font-family: 'Press Start 2P', cursive;
+      color: #fff;
       margin: 0;
-      color: #333;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      background: url('/bgswp.gif');
+      background-size: cover;
+      background-attachment: fixed;
+      background-repeat: no-repeat;
     }
 
     .container {
-      background: #fff;
-      padding: 40px;
-      border-radius: 20px;
-      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
-      width: 100%;
-      max-width: 500px;
+      max-width: 600px;
+      margin: 20px auto;
+      border: 6px solid #000;
+      background: #333;
+      padding: 20px;
+      box-shadow: 8px 8px 0px #000;
       text-align: center;
       animation: fadeIn 1s ease-out;
+      background: url('/bgswapai.gif');
+      background-size: cover;
+      justify-content: center;
+    
     }
 
     h3 {
@@ -54,9 +62,9 @@
       width: 100%;
       padding: 20px;
       margin: 15px 0;
-      border: 2px dashed #ddd;
+      border: 2px dashed #000000;
       border-radius: 10px;
-      background-color: #f7f7f7;
+      background-color: transparent; /* Set background to transparent */
       font-size: 16px;
       text-align: center;
       transition: 0.3s;
@@ -70,7 +78,6 @@
     .upload-area p {
       margin-top: 10px;
     }
-
     input[type="file"] {
       display: none;
     }
@@ -163,6 +170,32 @@
         font-size: 16px;
       }
     }
+      .transparent-90s-button {
+        display: inline-block;
+        font-family: 'Press Start 2P', cursive;
+        background: transparent; /* Make background transparent */
+        border: 3px solid #000; /* Black border */
+        padding: 10px 20px;
+        font-weight: bold;
+        font-size: 16px;
+        cursor: pointer;
+        text-decoration: none;
+        color: #000; /* Text color stays black */
+        box-shadow: 3px 3px 0px #000; /* Shadow for 3D effect */
+        transition: all 0.3s ease; 
+      }
+
+      .transparent-90s-button:hover {
+        background-color: rgba(244, 67, 54, 0.1); /* Slight red translucent fill on hover */
+        color: #fff;
+        border-color: #fff;
+        box-shadow: 4px 4px 15px rgba(0, 0, 0, 0.2), -4px -4px 15px rgba(255, 255, 255, 0.3); /* Stronger shadow on hover */
+      }
+
+      .transparent-90s-button:active {
+        background-color: rgba(244, 67, 54, 0.2); /* Slightly stronger background on click */
+        box-shadow: inset 4px 4px 10px rgba(0, 0, 0, 0.2); /* Inset shadow for click effect */
+    }
   </style>
 </head>
 <body>
@@ -183,10 +216,10 @@
     </div>
     
     <!-- Generate Button -->
-    <button id="generate-button">Generate Try-On Image</button>
+    <button id="generate-button" class="transparent-90s-button">Generate</button>
     
     <!-- Reset Button -->
-    <button id="reset-button" style="background-color: #f44336; margin-top: 10px;">Reset</button>
+    <button id="reset-button" class="transparent-90s-button">Reset</button>
 
     <!-- Output Image -->
     <div class="image-container">
